@@ -48,22 +48,22 @@
     ...
   };
 */
-#define ALLOC_POOL_IMPLEMENT(classType)                         \
-  public:                                                       \
-  void * operator new(std::size_t size) throw(std::bad_alloc)   \
-  {                                                             \
-    return __getPool().New(size);                               \
-  }                                                             \
-  void operator delete(void * ptr)                              \
-  {                                                             \
-    __getPool().Delete(ptr);                                    \
-  }                                                             \
-private:                                                        \
- static AllocatorPool<Dummy> &__getPool(void)                   \
- {                                                              \
-   static AllocatorPool<Dummy> pool;                            \
-   return pool;                                                 \
- }                                                              \
+#define ALLOC_POOL_IMPLEMENT(classType)                                 \
+  public:                                                               \
+  virtual void * operator new(std::size_t size) throw(std::bad_alloc)   \
+  {                                                                     \
+    return __getPool().New(size);                                       \
+  }                                                                     \
+  virtual void operator delete(void * ptr)                              \
+  {                                                                     \
+    __getPool().Delete(ptr);                                            \
+  }                                                                     \
+private:                                                                \
+ static virtual AllocatorPool<Dummy> &__getPool(void)                   \
+ {                                                                      \
+   static AllocatorPool<Dummy> pool;                                    \
+   return pool;                                                         \
+ }                                                                      \
 
 
 template <typename T>
@@ -104,7 +104,7 @@ public:
       }
   }
 
-  void * New(std::size_t size) throw(std::bad_alloc)
+  virtual void * New(std::size_t size) throw(std::bad_alloc)
   {
     void * ptr = NULL;
 
@@ -141,7 +141,7 @@ public:
     return ptr;
   }
 
-  void Delete(void * ptr) throw(std::length_error)
+  virtual void Delete(void * ptr) throw(std::length_error)
   {
 #if defined(ALLOC_POOL_EXCEEDING_DELETE_BEHAVIOUR) && ALLOC_POOL_EXCEEDING_DELETE_BEHAVIOUR == ALLOC_POOL_THROW
     if (_freedCount + 1 > ALLOC_POOL_MAX_DELETE_SIZE)
@@ -181,7 +181,7 @@ public:
   }
 
 protected:
-  void * allocate(std::size_t size) throw(std::bad_alloc)
+  virtual void * allocate(std::size_t size) throw(std::bad_alloc)
   {
     AllocWrapper * wrap = static_cast<AllocWrapper *>(std::malloc(sizeof(AllocWrapper)));
     if (wrap == NULL)
@@ -193,12 +193,12 @@ protected:
     return reinterpret_cast<T *>(&(wrap->object));
   }
 
-  void release(void * ptr)
+  virtual void release(void * ptr)
   {
     std::free(getWrapper(ptr));
   }
 
-  AllocWrapper * getWrapper(void * ptr)
+  virtual AllocWrapper * getWrapper(void * ptr)
   {
     return reinterpret_cast<AllocWrapper * >(static_cast<char *>(ptr) - (sizeof(AllocWrapper) - sizeof(T)));
   }
