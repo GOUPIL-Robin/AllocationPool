@@ -50,18 +50,18 @@
 */
 #define ALLOC_POOL_IMPLEMENT(classType)                                 \
   public:                                                               \
-  virtual void * operator new(std::size_t size) throw(std::bad_alloc)   \
+  void * operator new(std::size_t size) throw(std::bad_alloc)		\
   {                                                                     \
-    return __getPool().New(size);                                       \
+    return classType::__getPool().New(size);				\
   }                                                                     \
-  virtual void operator delete(void * ptr)                              \
+  void operator delete(void * ptr)					\
   {                                                                     \
-    __getPool().Delete(ptr);                                            \
+    classType::__getPool().Delete(ptr);					\
   }                                                                     \
 private:                                                                \
- static virtual AllocatorPool<Dummy> &__getPool(void)                   \
+ static AllocatorPool<classType> &__getPool(void)			\
  {                                                                      \
-   static AllocatorPool<Dummy> pool;                                    \
+   static AllocatorPool<classType> pool;				\
    return pool;                                                         \
  }                                                                      \
 
@@ -97,7 +97,6 @@ public:
       {
         AllocWrapper * next = node->next;
         
-        std::cout << "freed" << std::endl;
         release(node->object);
 
         node = next;
