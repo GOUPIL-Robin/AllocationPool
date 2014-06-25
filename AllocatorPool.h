@@ -54,17 +54,14 @@
   {                                                             \
     return __getPool().New(size);                               \
   }                                                             \
-                                                                \
   void operator delete(void * ptr)                              \
   {                                                             \
     __getPool().Delete(ptr);                                    \
   }                                                             \
-                                                                \
 private:                                                        \
  static AllocatorPool<Dummy> &__getPool(void)                   \
  {                                                              \
    static AllocatorPool<Dummy> pool;                            \
-                                                                \
    return pool;                                                 \
  }                                                              \
 
